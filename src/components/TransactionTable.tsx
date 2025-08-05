@@ -45,7 +45,7 @@ const TransactionTable = ({ transactions }: TransactionTableProps) => {
               return (
                 <tr key={transaction.id} className="hover:bg-gray-100 dark:hover:bg-gray-600">
                   <td className="py-3 px-4 border-b dark:border-gray-600 text-gray-800 dark:text-gray-200 whitespace-nowrap">{formatDate(transaction.date)}</td>
-                  <td className="py-3 px-4 border-b dark:border-gray-600 text-gray-800 dark:text-gray-200 truncate">
+                  <td className="py-3 px-4 border-b dark:border-gray-600 text-gray-800 dark:text-gray-200 whitespace-nowrap overflow-hidden text-ellipsis">
                     <Link href={`/keterangan/${transaction.id}`} className="text-blue-600 hover:underline dark:text-blue-400">
                       {transaction.description}
                     </Link>
