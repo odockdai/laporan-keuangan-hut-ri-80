@@ -1,3 +1,4 @@
+
 import Papa from 'papaparse';
 
 export interface Transaction {
@@ -6,6 +7,17 @@ export interface Transaction {
   description: string;
   income: number;
   expense: number;
+  fullDescription: string;
+  imageUrl?: string;
+}
+
+// Interface untuk data mentah yang diterima dari PapaParse
+interface RawTransactionData {
+  id: string;
+  date: string;
+  description: string;
+  income: string;
+  expense: string;
   fullDescription: string;
   imageUrl?: string;
 }
@@ -23,11 +35,11 @@ export const fetchTransactions = async (): Promise<Transaction[]> => {
     return new Promise((resolve, reject) => {
       Papa.parse(csvText, {
         header: true,
-        dynamicTyping: true,
+        dynamicTyping: false, // Set false agar kita bisa mengelola parsing tipe secara manual
         skipEmptyLines: true,
         complete: (results) => {
           // Membersihkan dan memvalidasi data
-          const cleanedData = results.data.map((row: any) => ({
+          const cleanedData = results.data.map((row: RawTransactionData) => ({
             id: parseInt(row.id, 10) || 0,
             date: row.date || '',
             description: row.description || '',
