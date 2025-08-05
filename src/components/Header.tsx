@@ -21,8 +21,8 @@ const Header = ({ transactions }: HeaderProps) => {
   return (
     <header className="py-6 bg-white dark:bg-gray-800 shadow-md">
       <div className="container mx-auto text-center">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Laporan Keuangan HUT RI ke-80</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">Panitia Penyelenggara</p>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Laporan Keuangan</h1>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">HUT RI ke-80</h1>
         <p className="text-xl font-bold text-gray-800 dark:text-gray-100 mt-4">Total Saldo: {formatRupiah(totalBalance)}</p>
       </div>
     </header>
