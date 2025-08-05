@@ -1,8 +1,19 @@
+
 import { getTransactionById } from '@/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-// import { PageProps } from 'next/types'; // Hapus import ini
+
+// Definisikan tipe untuk params
+interface KeteranganPageParams {
+  id: string;
+}
+
+// Definisikan tipe lengkap untuk props komponen halaman
+interface KeteranganPageProps {
+  params: KeteranganPageParams;
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -12,7 +23,7 @@ const formatDate = (dateString: string) => {
   return `${day}/${month}/${year}`;
 };
 
-export default async function KeteranganPage({ params }: { params: { id: string } }) { // Kembali ke definisi tipe yang benar
+export default async function KeteranganPage({ params, searchParams }: KeteranganPageProps) {
   const transaction = await getTransactionById(parseInt(params.id, 10));
 
   if (!transaction) {
