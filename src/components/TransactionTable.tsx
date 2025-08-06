@@ -46,7 +46,7 @@ const TransactionTable = ({ transactions }: TransactionTableProps) => {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-800">
-              {transactions.map((transaction, index) => {
+              {transactions.map((transaction) => {
                 currentBalance += transaction.income - transaction.expense;
                 return (
                   <tr 
