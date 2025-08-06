@@ -3,12 +3,7 @@ import Link from 'next/link';
 import { Transaction } from '@/lib/data';
 
 const formatRupiah = (amount: number) => {
-  const formatted = new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(amount);
-  return formatted.replace('Rp ', 'Rp');
+  return 'Rp' + amount.toLocaleString('id-ID');
 };
 
 const formatDate = (dateString: string) => {
