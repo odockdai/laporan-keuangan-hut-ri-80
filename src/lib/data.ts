@@ -26,7 +26,7 @@ const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/153cbt4TOYo6OTh
 
 export const fetchTransactions = async (): Promise<Transaction[]> => {
   try {
-    const response = await fetch(GOOGLE_SHEET_URL);
+    const response = await fetch(GOOGLE_SHEET_URL, { cache: 'no-store' });
     if (!response.ok) {
       throw new Error(`Failed to fetch spreadsheet: ${response.statusText}`);
     }
