@@ -2,11 +2,12 @@ import React from 'react';
 import { Transaction } from '@/lib/data';
 
 const formatRupiah = (amount: number) => {
-  return new Intl.NumberFormat('id-ID', {
+  const formatted = new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
     minimumFractionDigits: 0,
   }).format(amount);
+  return formatted.replace('Rp ', 'Rp');
 };
 
 interface HeaderProps {

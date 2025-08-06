@@ -4,11 +4,12 @@ import Link from 'next/link';
 import { Transaction } from '@/lib/data';
 
 const formatRupiah = (amount: number) => {
-  return new Intl.NumberFormat('id-ID', {
+  const formatted = new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
     minimumFractionDigits: 0,
   }).format(amount);
+  return formatted.replace('Rp ', 'Rp');
 };
 
 const formatDate = (dateString: string) => {
@@ -52,7 +53,7 @@ const TransactionTable = ({ transactions }: TransactionTableProps) => {
                   </td>
                   <td className="py-3 px-4 border-b dark:border-gray-600 text-right text-[#81C784]">{formatRupiah(transaction.income)}</td>
                   <td className="py-3 px-4 border-b dark:border-gray-600 text-right text-[#EF9A9A]">{formatRupiah(transaction.expense)}</td>
-                  <td className="py-3 px-4 border-b dark:border-gray-600 text-right font-medium text-gray-800 dark:text-gray-200">{formatRupiah(currentBalance)}</td>
+                  <td className="py-3 px-4 border-b dark:border-gray-600 text-right font-medium text-[#E0F2F1]">{formatRupiah(currentBalance)}</td>
                 </tr>
               );
             })}
