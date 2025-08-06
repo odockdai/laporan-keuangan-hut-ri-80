@@ -29,29 +29,29 @@ const TransactionTable = ({ transactions }: TransactionTableProps) => {
   return (
     <div className="container mx-auto px-4 mt-8">
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow table-fixed">
-          <thead className="bg-gray-50 dark:bg-gray-700">
+        <table className="min-w-full bg-[#1A362F] border border-gray-200 dark:border-gray-700 rounded-lg shadow table-fixed">
+          <thead className="bg-[#132621]">
             <tr>
-              <th className="py-3 px-4 border-b dark:border-gray-600 text-left text-sm font-semibold text-gray-600 dark:text-gray-300 w-[120px]">Tanggal</th>
-              <th className="py-3 px-4 border-b dark:border-gray-600 text-left text-sm font-semibold text-gray-600 dark:text-gray-300 w-2/5">Uraian</th>
-              <th className="py-3 px-4 border-b dark:border-gray-600 text-right text-sm font-semibold text-gray-600 dark:text-gray-300">Pemasukkan</th>
-              <th className="py-3 px-4 border-b dark:border-gray-600 text-right text-sm font-semibold text-gray-600 dark:text-gray-300">Pengeluaran</th>
-              <th className="py-3 px-4 border-b dark:border-gray-600 text-right text-sm font-semibold text-gray-600 dark:text-gray-300">Saldo</th>
+              <th className="py-3 px-4 border-b dark:border-gray-600 text-left text-sm font-semibold text-[#E0F2F1] w-[120px]">Tanggal</th>
+              <th className="py-3 px-4 border-b dark:border-gray-600 text-left text-sm font-semibold text-[#E0F2F1] w-2/5">Uraian</th>
+              <th className="py-3 px-4 border-b dark:border-gray-600 text-right text-sm font-semibold text-[#E0F2F1]">Pemasukkan</th>
+              <th className="py-3 px-4 border-b dark:border-gray-600 text-right text-sm font-semibold text-[#E0F2F1]">Pengeluaran</th>
+              <th className="py-3 px-4 border-b dark:border-gray-600 text-right text-sm font-semibold text-[#E0F2F1]">Saldo</th>
             </tr>
           </thead>
           <tbody>
             {transactions.map((transaction) => {
               currentBalance += transaction.income - transaction.expense;
               return (
-                <tr key={transaction.id} className="hover:bg-gray-100 dark:hover:bg-gray-600">
-                  <td className="py-3 px-4 border-b dark:border-gray-600 text-gray-800 dark:text-gray-200 whitespace-nowrap">{formatDate(transaction.date)}</td>
+                <tr key={transaction.id} className="hover:bg-[#2D4A42]">
+                  <td className="py-3 px-4 border-b dark:border-gray-600 text-[#E0F2F1] whitespace-nowrap">{formatDate(transaction.date)}</td>
                   <td className="py-3 px-4 border-b dark:border-gray-600 text-gray-800 dark:text-gray-200 whitespace-nowrap overflow-hidden text-ellipsis">
-                    <Link href={`/keterangan/${transaction.id}`} className="text-blue-600 hover:underline dark:text-blue-400">
+                    <Link href={`/keterangan/${transaction.id}`} className="text-[#90CAF9] hover:underline">
                       {transaction.description}
                     </Link>
                   </td>
-                  <td className="py-3 px-4 border-b dark:border-gray-600 text-right text-green-600 dark:text-green-400">{formatRupiah(transaction.income)}</td>
-                  <td className="py-3 px-4 border-b dark:border-gray-600 text-right text-red-600 dark:text-red-400">{formatRupiah(transaction.expense)}</td>
+                  <td className="py-3 px-4 border-b dark:border-gray-600 text-right text-[#81C784]">{formatRupiah(transaction.income)}</td>
+                  <td className="py-3 px-4 border-b dark:border-gray-600 text-right text-[#EF9A9A]">{formatRupiah(transaction.expense)}</td>
                   <td className="py-3 px-4 border-b dark:border-gray-600 text-right font-medium text-gray-800 dark:text-gray-200">{formatRupiah(currentBalance)}</td>
                 </tr>
               );

@@ -21,9 +21,9 @@ const Header = ({ transactions }: HeaderProps) => {
   return (
     <header className="py-6 bg-[#1A362F] shadow-md">
       <div className="container mx-auto text-center">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Laporan Keuangan</h1>
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">HUT RI ke-80</h1>
-        <p className="text-xl font-bold text-gray-800 dark:text-gray-100 mt-4">Total Saldo: {formatRupiah(totalBalance)}</p>
+        <h1 className="text-3xl font-bold text-[#E0F2F1]">Laporan Keuangan</h1>
+        <h1 className="text-3xl font-bold text-[#E0F2F1]">HUT RI ke-80</h1>
+        <p className="text-xl font-bold text-[#E0F2F1] mt-4">Total Saldo: {formatRupiah(totalBalance)}</p>
       </div>
     </header>
   );
