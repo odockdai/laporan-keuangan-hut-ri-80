@@ -1,8 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# KEDEMPEL - Laporan Keuangan HUT RI-80
+
+A modern, minimalist financial report application built with Next.js for tracking income and expenses during Indonesia's 80th Independence Day celebration.
+
+## Features
+
+- **Real-time Data**: Fetches transaction data from Google Sheets
+- **Modern UI/UX**: Clean, minimalist design with dark/light mode support
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
+- **Transaction Details**: Click on any transaction to view full description and receipt images
+- **Financial Summary**: Real-time balance calculation and display
+- **Indonesian Formatting**: Proper rupiah currency formatting (Rp100.000)
+
+## Tech Stack
+
+- **Framework**: Next.js 15.4.5 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS v4
+- **Data Source**: Google Sheets (via CSV export)
+- **Data Parsing**: PapaParse for CSV processing
+- **Image Handling**: Next.js Image component with remote pattern support
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── globals.css          # Global styles and design system
+│   ├── layout.tsx           # Root layout component
+│   ├── page.tsx             # Home page with transaction table
+│   └── keterangan/[id]/     # Transaction detail pages
+├── components/
+│   ├── Header.tsx           # Header with title and balance summary
+│   ├── TransactionTable.tsx # Main transaction table component
+│   └── Footer.tsx           # Footer component
+└── lib/
+    └── data.ts              # Data fetching and processing logic
+```
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+ 
+- npm, yarn, pnpm, or bun
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+# or
+bun install
+```
+
+3. Run the development server:
 
 ```bash
 npm run dev
@@ -14,23 +71,104 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Data Source Configuration
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The application fetches data from a Google Sheets document. To use your own data source:
 
-## Learn More
+1. Create a Google Sheets document with the following columns:
+   - `id`: Unique transaction identifier
+   - `date`: Transaction date (YYYY-MM-DD format)
+   - `description`: Short transaction description
+   - `income`: Income amount (number)
+   - `expense`: Expense amount (number)
+   - `fullDescription`: Detailed transaction description
+   - `imageUrl`: URL to receipt/proof image (optional)
 
-To learn more about Next.js, take a look at the following resources:
+2. Make the sheet publicly accessible and get the CSV export URL
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Update the `GOOGLE_SHEET_URL` in `src/lib/data.ts`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Design System
 
-## Deploy on Vercel
+### Colors
+- **Light Mode**: Clean whites and grays with blue accents
+- **Dark Mode**: Dark slate backgrounds with proper contrast
+- **Financial Colors**: Green for income, red for expenses
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Typography
+- **System Fonts**: Uses native system fonts for optimal performance
+- **Hierarchy**: Clear typographic scale with proper spacing
+- **Monospace**: Used for numbers and dates for better alignment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Layout
+- **Card-based Design**: Clean cards with subtle shadows
+- **Responsive Grid**: Adapts to all screen sizes
+- **Consistent Spacing**: 8px spacing system throughout
+
+## Features in Detail
+
+### Transaction Table
+- Displays all transactions in a clean, sortable table
+- Shows date, description, income, expense, and running balance
+- Click on any transaction description to view details
+- Responsive design with horizontal scroll on mobile
+
+### Transaction Details
+- Full transaction description
+- Receipt/proof images when available
+- Clean, focused layout for easy reading
+- Back navigation to main table
+
+### Balance Calculation
+- Real-time balance calculation
+- Color-coded positive/negative balances
+- Displayed prominently in header
+
+## Build and Deployment
+
+### Build for Production
+
+```bash
+npm run build
+```
+
+### Start Production Server
+
+```bash
+npm start
+```
+
+### Linting
+
+```bash
+npm run lint
+```
+
+## Browser Support
+
+- Chrome/Chromium 88+
+- Firefox 85+
+- Safari 14+
+- Edge 88+
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+This project is private and proprietary.
+
+## Support
+
+For support or questions, please contact the development team.
+
+---
+
+**Built with ❤️ for HUT RI ke-80**
