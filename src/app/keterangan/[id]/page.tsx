@@ -11,7 +11,8 @@ const formatDate = (dateString: string) => {
   return `${day}/${month}/${year}`;
 };
 
-export default async function KeteranganPage({ params }: { params: { id: string }; searchParams?: { [key: string]: string | string[] | undefined } }) {
+export default async function Page({ params: paramsPromise }: { params: Promise<{ id: string }>; }) {
+  const params = await paramsPromise;
   const transaction = await getTransactionById(parseInt(params.id, 10));
 
   if (!transaction) {

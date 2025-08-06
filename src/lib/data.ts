@@ -39,7 +39,7 @@ export const fetchTransactions = async (): Promise<Transaction[]> => {
         skipEmptyLines: true,
         complete: (results) => {
           // Membersihkan dan memvalidasi data
-          const cleanedData = results.data.map((row: RawTransactionData) => ({
+          const cleanedData = (results.data as RawTransactionData[]).map((row) => ({
             id: parseInt(row.id, 10) || 0,
             date: row.date || '',
             description: row.description || '',
