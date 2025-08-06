@@ -19,7 +19,7 @@ const Header = ({ transactions }: HeaderProps) => {
   }, 0);
 
   return (
-    <header className="py-6 bg-white dark:bg-gray-800 shadow-md">
+    <header className="py-6 bg-[#1A362F] shadow-md">
       <div className="container mx-auto text-center">
         <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Laporan Keuangan</h1>
         <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">HUT RI ke-80</h1>
