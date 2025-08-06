@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-// import { Geist, Geist_Mono } from "next/font/google"; // Dihapus sepenuhnya
 import "./globals.css";
 import Footer from "@/components/Footer";
 
@@ -14,8 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className="dark">
-      <body className="flex flex-col min-h-screen antialiased">
+    <html lang="en" suppressHydrationWarning>
+      <body className="flex flex-col min-h-screen antialiased bg-gray-50 dark:bg-slate-900">
         <main className="flex-grow">
           {children}
         </main>

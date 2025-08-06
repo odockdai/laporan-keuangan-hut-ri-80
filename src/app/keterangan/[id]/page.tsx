@@ -20,34 +20,65 @@ export default async function Page({ params: paramsPromise }: { params: Promise<
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 md:p-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">Keterangan Transaksi</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Tanggal: {formatDate(transaction.date)}</p>
-        
-        <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Uraian:</h2>
-          <p className="mt-2 text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{transaction.fullDescription}</p>
-        </div>
-
-        {transaction.imageUrl && (
-          <div className="mt-6">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Bukti Transaksi:</h2>
-            <div className="mt-2 relative w-full h-96 border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
-              <Image 
-                src={transaction.imageUrl} 
-                alt={`Nota untuk ${transaction.description}`} 
-                layout="fill" 
-                objectFit="contain"
-              />
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
+          {/* Header */}
+          <div className="px-6 py-8 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-light text-gray-900 dark:text-gray-100 tracking-tight">
+                  Detail Transaksi
+                </h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 font-mono">
+                  {formatDate(transaction.date)}
+                </p>
+              </div>
+              <Link 
+                href="/" 
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-lg transition-colors duration-150"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Kembali
+              </Link>
             </div>
           </div>
-        )}
 
-        <div className="mt-8 text-center">
-          <Link href="/" className="text-blue-600 hover:underline dark:text-blue-400">
-            &larr; Kembali ke Laporan
-          </Link>
+          {/* Content */}
+          <div className="px-6 py-8 space-y-8">
+            {/* Description */}
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                Uraian Lengkap
+              </h2>
+              <div className="bg-gray-50 dark:bg-slate-700/50 rounded-xl p-6 border border-gray-200 dark:border-gray-600">
+                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                  {transaction.fullDescription}
+                </p>
+              </div>
+            </div>
+
+            {/* Image */}
+            {transaction.imageUrl && (
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                  Bukti Transaksi
+                </h2>
+                <div className="bg-gray-50 dark:bg-slate-700/50 rounded-xl p-4 border border-gray-200 dark:border-gray-600">
+                  <div className="relative w-full h-96 rounded-lg overflow-hidden bg-white dark:bg-slate-800">
+                    <Image 
+                      src={transaction.imageUrl} 
+                      alt={`Nota untuk ${transaction.description}`} 
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
