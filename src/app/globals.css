@@ -68,11 +68,6 @@ body {
   background: var(--foreground);
 }
 
-/* Smooth transitions */
-* {
-  transition: all 0.2s ease-in-out;
-}
-
 /* Focus styles */
 *:focus {
   outline: 2px solid var(--ring);
