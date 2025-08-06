@@ -64,7 +64,7 @@ const TransactionTable = ({ transactions }: TransactionTableProps) => {
                     <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                       <Link 
                         href={`/keterangan/${transaction.id}`} 
-                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors duration-150 font-medium"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors duration-150 font-medium block truncate"
                       >
                         {transaction.description}
                       </Link>
