@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Footer from "@/components/Footer";
+import Fab from "@/components/Fab";
+import ClientOnly from "@/components/ClientOnly";
 
 export const metadata: Metadata = {
   title: "KEDEMPEL",
@@ -19,6 +21,9 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        <ClientOnly>
+          <Fab />
+        </ClientOnly>
       </body>
     </html>
   );
