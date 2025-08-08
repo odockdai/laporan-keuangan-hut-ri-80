@@ -77,8 +77,8 @@ export async function GET(_request: Request) {
     await redisClient.quit();
     console.log('Cache updated successfully.');
 
-    revalidatePath('/');
-    console.log('Path / revalidated.');
+    revalidateTag('transactions');
+    console.log('Tag \'transactions\' revalidated.');
 
     return NextResponse.json({ revalidated: true, now: Date.now(), count: transactions.length });
   } catch (error) {
