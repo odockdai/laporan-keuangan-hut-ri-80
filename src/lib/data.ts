@@ -1,13 +1,6 @@
 import Papa from 'papaparse';
-import { createClient } from 'redis';
 
-// Inisialisasi klien Redis
-// Klien akan secara otomatis menggunakan variabel lingkungan REDIS_URL
-const redisClient = createClient({
-  url: process.env.REDIS_URL
-});
-
-redisClient.on('error', (err) => console.error('Redis Client Error', err));
+// Semua kode Redis telah dihapus untuk penyederhanaan.
 
 export interface Transaction {
   id: number;
@@ -19,7 +12,6 @@ export interface Transaction {
   imageUrl?: string;
 }
 
-// ... (definisi RawTransactionData tetap sama)
 interface RawTransactionData {
   id: string;
   date: string;
@@ -31,13 +23,20 @@ interface RawTransactionData {
 }
 
 const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/153cbt4TOYo6OTh3Ez2OGcio9ZyZgiS7x479Fk5W5K8g/export?format=csv';
-const CACHE_KEY = 'transactions';
 
+// Fungsi ini sekarang menjadi satu-satunya sumber pengambilan data.
+// Next.js akan secara otomatis meng-cache hasilnya karena kita menggunakan fetch.
 const fetchFromGoogleSheet = async (): Promise<Transaction[]> => {
-  const response = await fetch(GOOGLE_SHEET_URL, { next: { tags: ['transactions'] } });
+  const response = await fetch(GOOGLE_SHEET_URL, {
+    // Kita hanya menggunakan `tags` untuk revalidasi on-demand.
+    // Tidak ada lagi `revalidate` berbasis waktu untuk mencegah konflik.
+    next: { tags: ['transactions'] },
+  });
+
   if (!response.ok) {
     throw new Error(`Failed to fetch spreadsheet: ${response.statusText}`);
   }
+
   const csvText = await response.text();
   return new Promise((resolve, reject) => {
     Papa.parse(csvText, {
@@ -61,34 +60,13 @@ const fetchFromGoogleSheet = async (): Promise<Transaction[]> => {
   });
 };
 
+// fetchTransactions sekarang hanya menjadi alias untuk kejelasan.
 export const fetchTransactions = async (): Promise<Transaction[]> => {
-  if (!process.env.REDIS_URL) {
-    console.log('REDIS_URL not found, fetching directly from Google Sheet.');
-    return fetchFromGoogleSheet();
-  }
-
   try {
-    await redisClient.connect();
-    const cachedTransactions = await redisClient.get(CACHE_KEY);
-    await redisClient.quit();
-
-    if (cachedTransactions) {
-      console.log('Cache hit!');
-      return JSON.parse(cachedTransactions);
-    }
-
-    console.log('Cache miss. Fetching from Google Sheet...');
-    const transactions = await fetchFromGoogleSheet();
-    
-    await redisClient.connect();
-    await redisClient.set(CACHE_KEY, JSON.stringify(transactions));
-    await redisClient.quit();
-
-    return transactions;
+    return await fetchFromGoogleSheet();
   } catch (error) {
-    console.error("Error in fetchTransactions:", error);
-    // Fallback ke pengambilan langsung jika Redis gagal
-    return fetchFromGoogleSheet();
+    console.error("Error fetching transactions:", error);
+    return []; // Kembalikan array kosong jika terjadi error
   }
 };
 
