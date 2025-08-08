@@ -34,7 +34,7 @@ const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/153cbt4TOYo6OTh
 const CACHE_KEY = 'transactions';
 
 const fetchFromGoogleSheet = async (): Promise<Transaction[]> => {
-  const response = await fetch(GOOGLE_SHEET_URL, { next: { revalidate: 60, tags: ['transactions'] } });
+  const response = await fetch(GOOGLE_SHEET_URL, { next: { tags: ['transactions'] } });
   if (!response.ok) {
     throw new Error(`Failed to fetch spreadsheet: ${response.statusText}`);
   }
