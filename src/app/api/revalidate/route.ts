@@ -1,7 +1,10 @@
-import Papa from 'papaparse';
+import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { kv } from '@vercel/kv';
+import Papa from 'papaparse';
 
-export interface Transaction {
+// Definisi tipe data, disalin dari lib/data.ts untuk kemandirian
+interface Transaction {
   id: number;
   date: string;
   description: string;
@@ -24,12 +27,9 @@ interface RawTransactionData {
 const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/153cbt4TOYo6OTh3Ez2OGcio9ZyZgiS7x479Fk5W5K8g/export?format=csv';
 const CACHE_KEY = 'transactions';
 
-// Fungsi untuk mengambil dan mengurai data dari Google Sheet
-const fetchFromGoogleSheet = async (): Promise<Transaction[]> => {
-  const response = await fetch(GOOGLE_SHEET_URL, {
-    // Kita tetap menggunakan revalidate di sini sebagai fallback jika cache gagal atau saat pertama kali diisi
-    next: { revalidate: 600 }, 
-  });
+// Fungsi ini di-copy dari lib/data.ts untuk memastikan endpoint ini mandiri
+const fetchAndParseSheet = async (): Promise<Transaction[]> => {
+  const response = await fetch(GOOGLE_SHEET_URL, { cache: 'no-store' }); // Selalu ambil yang terbaru
   if (!response.ok) {
     throw new Error(`Failed to fetch spreadsheet: ${response.statusText}`);
   }
@@ -59,32 +59,24 @@ const fetchFromGoogleSheet = async (): Promise<Transaction[]> => {
   });
 };
 
-// Fungsi utama yang sekarang memiliki cache layer
-export const fetchTransactions = async (): Promise<Transaction[]> => {
+export async function GET(_request: Request) {
   try {
-    // 1. Coba ambil dari Vercel KV dulu
-    const cachedTransactions = await kv.get<Transaction[]>(CACHE_KEY);
-    if (cachedTransactions) {
-      console.log('Cache hit!');
-      return cachedTransactions;
-    }
+    console.log('Webhook received. Revalidating data...');
 
-    // 2. Jika tidak ada di cache (cache miss), ambil dari sumber asli
-    console.log('Cache miss. Fetching from Google Sheet...');
-    const transactions = await fetchFromGoogleSheet();
+    // 1. Ambil data terbaru dari Google Sheet
+    const transactions = await fetchAndParseSheet();
 
-    // 3. Simpan hasil ke Vercel KV untuk request berikutnya
-    // Kita tidak perlu menentukan TTL (Time To Live) di sini karena akan di-revalidate oleh webhook
+    // 2. Simpan data baru ke dalam Vercel KV (overwrite yang lama)
     await kv.set(CACHE_KEY, transactions);
+    console.log('Cache updated successfully.');
 
-    return transactions;
+    // 3. Picu revalidasi untuk halaman utama
+    revalidatePath('/');
+    console.log('Path / revalidated.');
+
+    return NextResponse.json({ revalidated: true, now: Date.now(), count: transactions.length });
   } catch (error) {
-    console.error("Error in fetchTransactions:", error);
-    return []; // Kembalikan array kosong jika terjadi error
+    console.error('Error in revalidation webhook:', error);
+    return NextResponse.json({ message: 'Error revalidating', error: (error as Error).message }, { status: 500 });
   }
-};
-
-export const getTransactionById = async (id: number) => {
-  const transactions = await fetchTransactions();
-  return transactions.find((transaction) => transaction.id === id);
-};
+}
