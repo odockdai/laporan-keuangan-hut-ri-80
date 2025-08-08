@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
-import { kv } from '@vercel/kv';
+import { createClient } from 'redis';
 import Papa from 'papaparse';
 
-// Definisi tipe data, disalin dari lib/data.ts untuk kemandirian
+// Inisialisasi klien Redis
+const redisClient = createClient({
+  url: process.env.REDIS_URL
+});
+
+redisClient.on('error', (err) => console.error('Redis Client Error', err));
+
+// ... (definisi Transaction dan RawTransactionData tetap sama)
 interface Transaction {
   id: number;
   date: string;
@@ -27,14 +34,12 @@ interface RawTransactionData {
 const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/153cbt4TOYo6OTh3Ez2OGcio9ZyZgiS7x479Fk5W5K8g/export?format=csv';
 const CACHE_KEY = 'transactions';
 
-// Fungsi ini di-copy dari lib/data.ts untuk memastikan endpoint ini mandiri
 const fetchAndParseSheet = async (): Promise<Transaction[]> => {
-  const response = await fetch(GOOGLE_SHEET_URL, { cache: 'no-store' }); // Selalu ambil yang terbaru
+  const response = await fetch(GOOGLE_SHEET_URL, { cache: 'no-store' });
   if (!response.ok) {
     throw new Error(`Failed to fetch spreadsheet: ${response.statusText}`);
   }
   const csvText = await response.text();
-
   return new Promise((resolve, reject) => {
     Papa.parse(csvText, {
       header: true,
@@ -52,25 +57,26 @@ const fetchAndParseSheet = async (): Promise<Transaction[]> => {
         })).filter(row => row.id !== 0);
         resolve(cleanedData as Transaction[]);
       },
-      error: (error: Error) => {
-        reject(error);
-      },
+      error: (error: Error) => reject(error),
     });
   });
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(_request: Request) {
+  if (!process.env.REDIS_URL) {
+    return NextResponse.json({ message: 'REDIS_URL not configured' }, { status: 500 });
+  }
+
   try {
     console.log('Webhook received. Revalidating data...');
-
-    // 1. Ambil data terbaru dari Google Sheet
     const transactions = await fetchAndParseSheet();
 
-    // 2. Simpan data baru ke dalam Vercel KV (overwrite yang lama)
-    await kv.set(CACHE_KEY, transactions);
+    await redisClient.connect();
+    await redisClient.set(CACHE_KEY, JSON.stringify(transactions));
+    await redisClient.quit();
     console.log('Cache updated successfully.');
 
-    // 3. Picu revalidasi untuk halaman utama
     revalidatePath('/');
     console.log('Path / revalidated.');
 

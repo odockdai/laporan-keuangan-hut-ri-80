@@ -1,5 +1,13 @@
 import Papa from 'papaparse';
-import { kv } from '@vercel/kv';
+import { createClient } from 'redis';
+
+// Inisialisasi klien Redis
+// Klien akan secara otomatis menggunakan variabel lingkungan REDIS_URL
+const redisClient = createClient({
+  url: process.env.REDIS_URL
+});
+
+redisClient.on('error', (err) => console.error('Redis Client Error', err));
 
 export interface Transaction {
   id: number;
@@ -11,6 +19,7 @@ export interface Transaction {
   imageUrl?: string;
 }
 
+// ... (definisi RawTransactionData tetap sama)
 interface RawTransactionData {
   id: string;
   date: string;
@@ -24,17 +33,12 @@ interface RawTransactionData {
 const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/153cbt4TOYo6OTh3Ez2OGcio9ZyZgiS7x479Fk5W5K8g/export?format=csv';
 const CACHE_KEY = 'transactions';
 
-// Fungsi untuk mengambil dan mengurai data dari Google Sheet
 const fetchFromGoogleSheet = async (): Promise<Transaction[]> => {
-  const response = await fetch(GOOGLE_SHEET_URL, {
-    // Kita tetap menggunakan revalidate di sini sebagai fallback jika cache gagal atau saat pertama kali diisi
-    next: { revalidate: 600 }, 
-  });
+  const response = await fetch(GOOGLE_SHEET_URL, { next: { revalidate: 600 } });
   if (!response.ok) {
     throw new Error(`Failed to fetch spreadsheet: ${response.statusText}`);
   }
   const csvText = await response.text();
-
   return new Promise((resolve, reject) => {
     Papa.parse(csvText, {
       header: true,
@@ -52,35 +56,39 @@ const fetchFromGoogleSheet = async (): Promise<Transaction[]> => {
         })).filter(row => row.id !== 0);
         resolve(cleanedData as Transaction[]);
       },
-      error: (error: Error) => {
-        reject(error);
-      },
+      error: (error: Error) => reject(error),
     });
   });
 };
 
-// Fungsi utama yang sekarang memiliki cache layer
 export const fetchTransactions = async (): Promise<Transaction[]> => {
+  if (!process.env.REDIS_URL) {
+    console.log('REDIS_URL not found, fetching directly from Google Sheet.');
+    return fetchFromGoogleSheet();
+  }
+
   try {
-    // 1. Coba ambil dari Vercel KV dulu
-    const cachedTransactions = await kv.get<Transaction[]>(CACHE_KEY);
+    await redisClient.connect();
+    const cachedTransactions = await redisClient.get(CACHE_KEY);
+    await redisClient.quit();
+
     if (cachedTransactions) {
       console.log('Cache hit!');
-      return cachedTransactions;
+      return JSON.parse(cachedTransactions);
     }
 
-    // 2. Jika tidak ada di cache (cache miss), ambil dari sumber asli
     console.log('Cache miss. Fetching from Google Sheet...');
     const transactions = await fetchFromGoogleSheet();
-
-    // 3. Simpan hasil ke Vercel KV untuk request berikutnya
-    // Kita tidak perlu menentukan TTL (Time To Live) di sini karena akan di-revalidate oleh webhook
-    await kv.set(CACHE_KEY, transactions);
+    
+    await redisClient.connect();
+    await redisClient.set(CACHE_KEY, JSON.stringify(transactions));
+    await redisClient.quit();
 
     return transactions;
   } catch (error) {
     console.error("Error in fetchTransactions:", error);
-    return []; // Kembalikan array kosong jika terjadi error
+    // Fallback ke pengambilan langsung jika Redis gagal
+    return fetchFromGoogleSheet();
   }
 };
 
