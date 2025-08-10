@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 interface TwibbonGeneratorProps {
   twibbonSrc: string;
@@ -15,45 +15,54 @@ const TwibbonGenerator = ({ twibbonSrc }: TwibbonGeneratorProps) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
+  // State baru untuk melacak kapan gambar pengguna siap
+  const [isUserImageReady, setIsUserImageReady] = useState(false);
 
-  const drawCanvas = useCallback(() => {
-    const canvas = canvasRef.current;
-    const twibbonImg = twibbonImageRef.current;
-    const userImg = userImageRef.current;
-    if (!canvas || !twibbonImg) return;
+  // Efek ini menggambar ulang canvas setiap kali ada perubahan yang relevan
+  useEffect(() => {
+    const drawCanvas = () => {
+      const canvas = canvasRef.current;
+      const twibbonImg = twibbonImageRef.current;
+      const userImg = userImageRef.current;
+      if (!canvas || !twibbonImg) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (userImg) {
-      ctx.drawImage(
-        userImg,
-        position.x,
-        position.y,
-        userImg.width * scale,
-        userImg.height * scale
-      );
-    }
+      // Gambar foto pengguna jika sudah siap
+      if (userImg && isUserImageReady) {
+        ctx.drawImage(
+          userImg,
+          position.x,
+          position.y,
+          userImg.width * scale,
+          userImg.height * scale
+        );
+      }
 
-    ctx.drawImage(twibbonImg, 0, 0, canvas.width, canvas.height);
-  }, [position, scale]); // Dependency array untuk useCallback
+      // Selalu gambar bingkai twibbon di atas
+      ctx.drawImage(twibbonImg, 0, 0, canvas.width, canvas.height);
+    };
 
+    drawCanvas();
+  }, [position, scale, isUserImageReady, twibbonSrc]); // Tambahkan isUserImageReady dan twibbonSrc ke dependensi
+
+  // Efek ini hanya untuk memuat gambar bingkai twibbon sekali
   useEffect(() => {
     const img = new Image();
     img.src = twibbonSrc;
+    img.crossOrigin = "Anonymous";
     img.onload = () => {
       twibbonImageRef.current = img;
-      drawCanvas();
+      // Memicu render ulang awal untuk menggambar bingkai
+      setPosition(prev => ({...prev})); 
     };
-  }, [twibbonSrc, drawCanvas]);
-
-  useEffect(() => {
-    drawCanvas();
-  }, [drawCanvas]);
+  }, [twibbonSrc]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsUserImageReady(false); // Reset status saat gambar baru dipilih
     if (e.target.files && e.target.files[0]) {
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -69,6 +78,7 @@ const TwibbonGenerator = ({ twibbonSrc }: TwibbonGeneratorProps) => {
             x: (canvas.width - img.width * newScale) / 2,
             y: (canvas.height - img.height * newScale) / 2,
           });
+          setIsUserImageReady(true); // Set status siap setelah semua state diatur
         };
       };
       reader.readAsDataURL(e.target.files[0]);
@@ -98,7 +108,7 @@ const TwibbonGenerator = ({ twibbonSrc }: TwibbonGeneratorProps) => {
     if (!isDragging || !userImageRef.current) return;
     const dx = e.clientX - lastMousePos.x;
     const dy = e.clientY - lastMousePos.y;
-    setPosition({ x: position.x + dx, y: position.y + dy });
+    setPosition((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
     setLastMousePos({ x: e.clientX, y: e.clientY });
   };
 
@@ -106,8 +116,7 @@ const TwibbonGenerator = ({ twibbonSrc }: TwibbonGeneratorProps) => {
     if (!userImageRef.current) return;
     e.preventDefault();
     const scaleAmount = e.deltaY > 0 ? -0.05 : 0.05;
-    const newScale = Math.max(0.1, scale + scaleAmount);
-    setScale(newScale);
+    setScale((prev) => Math.max(0.1, prev + scaleAmount));
   };
 
   return (
@@ -130,13 +139,13 @@ const TwibbonGenerator = ({ twibbonSrc }: TwibbonGeneratorProps) => {
         </label>
         <button
           onClick={handleDownload}
-          disabled={!userImageRef.current}
+          disabled={!isUserImageReady}
           className="flex-1 w-full px-4 py-3 bg-blue-600 text-white rounded-lg shadow-sm disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
         >
           Unduh Twibbon
         </button>
       </div>
-      <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">Tips: Gunakan scroll mouse untuk zoom dan drag untuk menggeser foto.</p>
+      <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">Tips: Bissmillah sebelum download biar berkah.</p>
     </div>
   );
 };
