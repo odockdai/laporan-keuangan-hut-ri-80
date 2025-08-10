@@ -15,54 +15,38 @@ const TwibbonGenerator = ({ twibbonSrc }: TwibbonGeneratorProps) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
-  // State baru untuk melacak kapan gambar pengguna siap
+  const [lastPinchDist, setLastPinchDist] = useState(0);
   const [isUserImageReady, setIsUserImageReady] = useState(false);
 
-  // Efek ini menggambar ulang canvas setiap kali ada perubahan yang relevan
   useEffect(() => {
     const drawCanvas = () => {
       const canvas = canvasRef.current;
       const twibbonImg = twibbonImageRef.current;
       const userImg = userImageRef.current;
       if (!canvas || !twibbonImg) return;
-
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
-
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Gambar foto pengguna jika sudah siap
       if (userImg && isUserImageReady) {
-        ctx.drawImage(
-          userImg,
-          position.x,
-          position.y,
-          userImg.width * scale,
-          userImg.height * scale
-        );
+        ctx.drawImage(userImg, position.x, position.y, userImg.width * scale, userImg.height * scale);
       }
-
-      // Selalu gambar bingkai twibbon di atas
       ctx.drawImage(twibbonImg, 0, 0, canvas.width, canvas.height);
     };
-
     drawCanvas();
-  }, [position, scale, isUserImageReady, twibbonSrc]); // Tambahkan isUserImageReady dan twibbonSrc ke dependensi
+  }, [position, scale, isUserImageReady, twibbonSrc]);
 
-  // Efek ini hanya untuk memuat gambar bingkai twibbon sekali
   useEffect(() => {
     const img = new Image();
     img.src = twibbonSrc;
     img.crossOrigin = "Anonymous";
     img.onload = () => {
       twibbonImageRef.current = img;
-      // Memicu render ulang awal untuk menggambar bingkai
-      setPosition(prev => ({...prev})); 
+      setPosition(prev => ({...prev}));
     };
   }, [twibbonSrc]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIsUserImageReady(false); // Reset status saat gambar baru dipilih
+    setIsUserImageReady(false);
     if (e.target.files && e.target.files[0]) {
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -74,11 +58,8 @@ const TwibbonGenerator = ({ twibbonSrc }: TwibbonGeneratorProps) => {
           if (!canvas) return;
           const newScale = Math.min(canvas.width / img.width, canvas.height / img.height);
           setScale(newScale);
-          setPosition({
-            x: (canvas.width - img.width * newScale) / 2,
-            y: (canvas.height - img.height * newScale) / 2,
-          });
-          setIsUserImageReady(true); // Set status siap setelah semua state diatur
+          setPosition({ x: (canvas.width - img.width * newScale) / 2, y: (canvas.height - img.height * newScale) / 2 });
+          setIsUserImageReady(true);
         };
       };
       reader.readAsDataURL(e.target.files[0]);
@@ -94,15 +75,14 @@ const TwibbonGenerator = ({ twibbonSrc }: TwibbonGeneratorProps) => {
     link.click();
   };
 
+  // --- Mouse Handlers ---
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!userImageRef.current) return;
     setIsDragging(true);
     setLastMousePos({ x: e.clientX, y: e.clientY });
   };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
+  const handleMouseUp = () => setIsDragging(false);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isDragging || !userImageRef.current) return;
@@ -119,15 +99,48 @@ const TwibbonGenerator = ({ twibbonSrc }: TwibbonGeneratorProps) => {
     setScale((prev) => Math.max(0.1, prev + scaleAmount));
   };
 
+  // --- Touch Handlers ---
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!userImageRef.current) return;
+    if (e.touches.length === 1) {
+      setIsDragging(true);
+      setLastMousePos({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+    } else if (e.touches.length === 2) {
+      const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      setLastPinchDist(dist);
+    }
+  };
+
+  const handleTouchEnd = () => setIsDragging(false);
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!userImageRef.current) return;
+    e.preventDefault();
+    if (e.touches.length === 1 && isDragging) {
+      const dx = e.touches[0].clientX - lastMousePos.x;
+      const dy = e.touches[0].clientY - lastMousePos.y;
+      setPosition((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
+      setLastMousePos({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+    } else if (e.touches.length === 2) {
+      const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      const scaleAmount = (dist - lastPinchDist) / 1000; // Adjust sensitivity
+      setScale((prev) => Math.max(0.1, prev + scaleAmount));
+      setLastPinchDist(dist);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center">
       <div 
-        className="relative w-full max-w-lg rounded-lg cursor-pointer overflow-hidden bg-[linear-gradient(45deg,theme(colors.gray.200)_25%,transparent_25%),linear-gradient(-45deg,theme(colors.gray.200)_25%,transparent_25%),linear-gradient(45deg,transparent_75%,theme(colors.gray.200)_75%),linear-gradient(-45deg,transparent_75%,theme(colors.gray.200)_75%)] dark:bg-[linear-gradient(45deg,theme(colors.slate.700)_25%,transparent_25%),linear-gradient(-45deg,theme(colors.slate.700)_25%,transparent_25%),linear-gradient(45deg,transparent_75%,theme(colors.slate.700)_75%),linear-gradient(-45deg,transparent_75%,theme(colors.slate.700)_75%)] bg-[length:20px_20px]"
+        className="relative w-full max-w-lg rounded-lg cursor-grab active:cursor-grabbing touch-none overflow-hidden bg-[linear-gradient(45deg,theme(colors.gray.200)_25%,transparent_25%),linear-gradient(-45deg,theme(colors.gray.200)_25%,transparent_25%),linear-gradient(45deg,transparent_75%,theme(colors.gray.200)_75%),linear-gradient(-45deg,transparent_75%,theme(colors.gray.200)_75%)] dark:bg-[linear-gradient(45deg,theme(colors.slate.700)_25%,transparent_25%),linear-gradient(-45deg,theme(colors.slate.700)_25%,transparent_25%),linear-gradient(45deg,transparent_75%,theme(colors.slate.700)_75%),linear-gradient(-45deg,transparent_75%,theme(colors.slate.700)_75%)] bg-[length:20px_20px]"
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseUp}
         onWheel={handleWheel}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={handleTouchMove}
       >
         <canvas ref={canvasRef} width={1080} height={1080} className="w-full h-auto" />
       </div>
@@ -145,7 +158,7 @@ const TwibbonGenerator = ({ twibbonSrc }: TwibbonGeneratorProps) => {
           Unduh Twibbon
         </button>
       </div>
-      <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">Tips: Bissmillah sebelum download biar berkah.</p>
+      <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">Tips: Geser untuk memposisikan, cubit untuk zoom.</p>
     </div>
   );
 };
