@@ -21,9 +21,9 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
-        <ClientOnly>
+        {/* <ClientOnly>
           <Fab />
-        </ClientOnly>
+        </ClientOnly> */}
       </body>
     </html>
   );
